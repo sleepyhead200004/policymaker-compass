@@ -19,17 +19,17 @@ const contactInfo = [
   {
     icon: MapPin,
     title: "Office Address",
-    details: ["Kathmandu, Nepal", "Bagmati Province"],
+    details: ["Kathmandu, Nepal"],
   },
   {
     icon: Phone,
     title: "Phone",
-    details: ["+977 1234567890", "+977 9876543210"],
+    details: ["+977 980-1834583"],
   },
   {
     icon: Mail,
     title: "Email",
-    details: ["info@concernnepal.org", "contact@concernnepal.org"],
+    details: ["info@concernnepal.org"],
   },
   {
     icon: Clock,
