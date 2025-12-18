@@ -28,6 +28,8 @@ const navLinks = [
   { name: "Projects", href: "/projects" },
   { name: "Research", href: "/research" },
   { name: "Leadership Academy", href: "/leadership-academy" },
+  { name: "Team", href: "/team" },
+  { name: "Careers", href: "/careers" },
   { name: "Blog", href: "/blog" },
   { name: "Contact", href: "/contact" },
 ];
@@ -120,6 +122,22 @@ export function Header() {
             }`}
           >
             Leadership Academy
+          </Link>
+          <Link
+            to="/team"
+            className={`px-3 py-2 text-sm font-medium transition-colors hover:text-primary ${
+              isActive("/team") ? "text-primary" : "text-muted-foreground"
+            }`}
+          >
+            Team
+          </Link>
+          <Link
+            to="/careers"
+            className={`px-3 py-2 text-sm font-medium transition-colors hover:text-primary ${
+              isActive("/careers") ? "text-primary" : "text-muted-foreground"
+            }`}
+          >
+            Careers
           </Link>
           <Link
             to="/blog"

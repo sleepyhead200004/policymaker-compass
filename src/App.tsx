@@ -10,6 +10,8 @@ import ServiceDetail from "./pages/ServiceDetail";
 import Projects from "./pages/Projects";
 import Research from "./pages/Research";
 import LeadershipAcademy from "./pages/LeadershipAcademy";
+import Team from "./pages/Team";
+import Careers from "./pages/Careers";
 import Blog from "./pages/Blog";
 import BlogPost from "./pages/BlogPost";
 import Contact from "./pages/Contact";
@@ -31,6 +33,8 @@ const App = () => (
           <Route path="/projects" element={<Projects />} />
           <Route path="/research" element={<Research />} />
           <Route path="/leadership-academy" element={<LeadershipAcademy />} />
+          <Route path="/team" element={<Team />} />
+          <Route path="/careers" element={<Careers />} />
           <Route path="/blog" element={<Blog />} />
           <Route path="/blog/:slug" element={<BlogPost />} />
           <Route path="/contact" element={<Contact />} />
