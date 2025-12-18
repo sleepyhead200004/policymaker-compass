@@ -9,7 +9,6 @@ import {
   Building2,
   CheckCircle,
   Globe2,
-  LineChart,
   MapPin,
   Megaphone,
   Shield,
@@ -18,11 +17,14 @@ import {
   Users,
   Vote,
 } from "lucide-react";
+import HeroSlider from "@/components/HeroSlider";
+
+const WHATSAPP_LINK = "https://wa.me/9779801834583";
 
 const stats = [
-  { label: "Established", value: "2018" },
-  { label: "Projects Completed", value: "150+" },
-  { label: "Ongoing Projects", value: "12" },
+  { label: "Years of Experience", value: "4+" },
+  { label: "Projects Completed", value: "30+" },
+  { label: "Clients Served", value: "100+" },
   { label: "Core Areas", value: "10" },
 ];
 
@@ -130,36 +132,8 @@ const blogPosts = [
 export default function Index() {
   return (
     <Layout>
-      {/* Hero Section */}
-      <section className="relative overflow-hidden bg-primary py-20 md:py-32">
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,hsl(var(--primary-foreground)/0.03)_1px,transparent_1px),linear-gradient(to_bottom,hsl(var(--primary-foreground)/0.03)_1px,transparent_1px)] bg-[size:4rem_4rem]" />
-        <div className="container relative">
-          <div className="mx-auto max-w-3xl text-center">
-            <h1 className="mb-6 text-4xl font-bold tracking-tight text-primary-foreground md:text-5xl lg:text-6xl">
-              Research-Driven Political & Policy Consulting
-            </h1>
-            <p className="mb-8 text-lg text-primary-foreground/80 md:text-xl">
-              Empowering democratic governance through evidence-based strategies,
-              comprehensive research, and transformative leadership development.
-            </p>
-            <div className="flex flex-col justify-center gap-4 sm:flex-row">
-              <Button size="lg" variant="secondary" asChild>
-                <Link to="/services">
-                  Explore Services <ArrowRight className="ml-2 h-4 w-4" />
-                </Link>
-              </Button>
-              <Button
-                size="lg"
-                variant="outline"
-                className="border-primary-foreground/30 bg-transparent text-primary-foreground hover:bg-primary-foreground/10 hover:text-primary-foreground"
-                asChild
-              >
-                <Link to="/contact">Contact Us</Link>
-              </Button>
-            </div>
-          </div>
-        </div>
-      </section>
+      {/* Hero Slider */}
+      <HeroSlider />
 
       {/* Stats Section */}
       <section className="border-b border-border bg-background py-12">
@@ -180,16 +154,12 @@ export default function Index() {
       {/* About Snapshot */}
       <section className="py-16 md:py-24">
         <div className="container">
-          <div className="mx-auto max-w-3xl text-center">
+          <div className="mx-auto max-w-4xl text-center">
             <h2 className="mb-4 text-3xl font-bold md:text-4xl">
               About Concern Nepal
             </h2>
             <p className="text-lg text-muted-foreground">
-              Concern Nepal is a premier research and political consulting organization
-              dedicated to strengthening democratic governance. We combine rigorous
-              academic research with practical political expertise to deliver
-              actionable insights and strategies for political leaders, institutions,
-              and civil society organizations.
+              Concern Nepal is a premier research and consulting firm dedicated to providing innovative and data-driven solutions in the fields of electoral, political, social, policy analysis, and market research. Established in 2022, the organization has carved a niche in delivering impactful services tailored to meet the diverse needs of its clients. Among its core offerings, political consulting and political leadership training stand out as key pillars, designed to empower political leaders, institutions, and stakeholders with strategic insights and actionable plans. In the realm of political consulting, Concern Nepal specializes in crafting comprehensive strategies that address the dynamic challenges of political campaigns, voter outreach, and public engagement.
             </p>
             <Button variant="outline" className="mt-6" asChild>
               <Link to="/about">
@@ -436,9 +406,9 @@ export default function Index() {
             </p>
             <div className="flex flex-col justify-center gap-4 sm:flex-row">
               <Button size="lg" variant="secondary" asChild>
-                <Link to="/contact">
+                <a href={WHATSAPP_LINK} target="_blank" rel="noopener noreferrer">
                   Get Started <ArrowRight className="ml-2 h-4 w-4" />
-                </Link>
+                </a>
               </Button>
               <Button
                 size="lg"
