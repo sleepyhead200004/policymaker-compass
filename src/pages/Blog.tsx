@@ -1,15 +1,21 @@
 import { Link } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
 import { Layout } from "@/components/layout/Layout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Clock, User } from "lucide-react";
-import { blogPosts } from "@/data/blogData";
+import { Clock, User, Loader2 } from "lucide-react";
+import { blogApi, ApiBlog } from "@/lib/api";
 
 const categories = ["All", "Governance", "Politics", "Society & Media", "Policy Analysis"];
 
 export default function Blog() {
-  const featuredPost = blogPosts.find((post) => post.featured);
-  const regularPosts = blogPosts.filter((post) => !post.featured);
+  const { data: blogs, isLoading, error } = useQuery({
+    queryKey: ['blogs'],
+    queryFn: blogApi.getAll,
+  });
+
+  const featuredPost = blogs?.[0];
+  const regularPosts = blogs?.slice(1) || [];
 
   return (
     <Layout>
@@ -45,11 +51,29 @@ export default function Blog() {
         </div>
       </section>
 
+      {/* Loading State */}
+      {isLoading && (
+        <section className="py-12">
+          <div className="container flex justify-center">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          </div>
+        </section>
+      )}
+
+      {/* Error State */}
+      {error && (
+        <section className="py-12">
+          <div className="container text-center">
+            <p className="text-destructive">Failed to load blogs. Please try again later.</p>
+          </div>
+        </section>
+      )}
+
       {/* Featured Post */}
-      {featuredPost && (
+      {featuredPost && !isLoading && (
         <section className="py-12">
           <div className="container">
-            <Link to={`/blog/${featuredPost.slug}`}>
+            <Link to={`/blog/${featuredPost._id}`}>
               <Card className="overflow-hidden transition-shadow hover:shadow-lg md:flex">
                 <div className="flex h-64 items-center justify-center bg-gradient-to-br from-primary/10 to-secondary/10 md:h-auto md:w-2/5">
                   <span className="text-6xl font-bold text-primary/20">Featured</span>
@@ -57,23 +81,27 @@ export default function Blog() {
                 <div className="md:w-3/5">
                   <CardHeader>
                     <div className="mb-2 flex flex-wrap items-center gap-2">
-                      <Badge variant="secondary">{featuredPost.category}</Badge>
-                      <span className="text-sm text-muted-foreground">{featuredPost.date}</span>
+                      {featuredPost.tags[0] && (
+                        <Badge variant="secondary">{featuredPost.tags[0]}</Badge>
+                      )}
+                      <span className="text-sm text-muted-foreground">
+                        {new Date(featuredPost.created_date).toLocaleDateString()}
+                      </span>
                     </div>
                     <CardTitle className="text-2xl md:text-3xl">{featuredPost.title}</CardTitle>
                     <CardDescription className="text-base">
-                      {featuredPost.excerpt}
+                      {featuredPost.subtitle || featuredPost.description.slice(0, 150) + '...'}
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
                     <div className="flex items-center gap-4 text-sm text-muted-foreground">
                       <div className="flex items-center gap-1">
                         <User className="h-4 w-4" />
-                        {featuredPost.author.name}
+                        {featuredPost.author}
                       </div>
                       <div className="flex items-center gap-1">
                         <Clock className="h-4 w-4" />
-                        {featuredPost.readTime}
+                        {featuredPost.read_time}
                       </div>
                     </div>
                   </CardContent>
@@ -85,43 +113,49 @@ export default function Blog() {
       )}
 
       {/* All Posts */}
-      <section className="py-12 md:py-16">
-        <div className="container">
-          <h2 className="mb-8 text-2xl font-bold">Latest Articles</h2>
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {regularPosts.map((post) => (
-              <Link key={post.slug} to={`/blog/${post.slug}`}>
-                <Card className="group h-full cursor-pointer transition-shadow hover:shadow-lg">
-                  <CardHeader>
-                    <div className="mb-2 flex items-center gap-2">
-                      <Badge variant="outline">{post.category}</Badge>
-                    </div>
-                    <CardTitle className="line-clamp-2 text-xl transition-colors group-hover:text-primary">
-                      {post.title}
-                    </CardTitle>
-                    <CardDescription className="line-clamp-3">
-                      {post.excerpt}
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="flex items-center justify-between text-sm text-muted-foreground">
-                      <div className="flex items-center gap-1">
-                        <User className="h-4 w-4" />
-                        {post.author.name}
+      {!isLoading && regularPosts.length > 0 && (
+        <section className="py-12 md:py-16">
+          <div className="container">
+            <h2 className="mb-8 text-2xl font-bold">Latest Articles</h2>
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+              {regularPosts.map((post: ApiBlog) => (
+                <Link key={post._id} to={`/blog/${post._id}`}>
+                  <Card className="group h-full cursor-pointer transition-shadow hover:shadow-lg">
+                    <CardHeader>
+                      <div className="mb-2 flex items-center gap-2">
+                        {post.tags[0] && (
+                          <Badge variant="outline">{post.tags[0]}</Badge>
+                        )}
                       </div>
-                      <div className="flex items-center gap-1">
-                        <Clock className="h-4 w-4" />
-                        {post.readTime}
+                      <CardTitle className="line-clamp-2 text-xl transition-colors group-hover:text-primary">
+                        {post.title}
+                      </CardTitle>
+                      <CardDescription className="line-clamp-3">
+                        {post.subtitle || post.description.slice(0, 100) + '...'}
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="flex items-center justify-between text-sm text-muted-foreground">
+                        <div className="flex items-center gap-1">
+                          <User className="h-4 w-4" />
+                          {post.author}
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <Clock className="h-4 w-4" />
+                          {post.read_time}
+                        </div>
                       </div>
-                    </div>
-                    <p className="mt-2 text-xs text-muted-foreground">{post.date}</p>
-                  </CardContent>
-                </Card>
-              </Link>
-            ))}
+                      <p className="mt-2 text-xs text-muted-foreground">
+                        {new Date(post.created_date).toLocaleDateString()}
+                      </p>
+                    </CardContent>
+                  </Card>
+                </Link>
+              ))}
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
     </Layout>
   );
 }
