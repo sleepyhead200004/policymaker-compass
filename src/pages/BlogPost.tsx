@@ -1,6 +1,6 @@
 import { useParams, Link, Navigate } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
 import { Layout } from "@/components/layout/Layout";
-import { getBlogPostBySlug, getRelatedPosts } from "@/data/blogData";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -15,17 +15,40 @@ import {
   Share2,
   Twitter,
   User,
+  Loader2,
 } from "lucide-react";
+import { blogApi, ApiBlog } from "@/lib/api";
 
 export default function BlogPost() {
   const { slug } = useParams<{ slug: string }>();
-  const post = slug ? getBlogPostBySlug(slug) : undefined;
 
-  if (!post) {
+  const { data: post, isLoading, error } = useQuery({
+    queryKey: ['blog', slug],
+    queryFn: () => blogApi.getById(slug!),
+    enabled: !!slug,
+  });
+
+  const { data: recommendations } = useQuery({
+    queryKey: ['blog-recommendations', slug],
+    queryFn: () => blogApi.getRecommendations(slug!),
+    enabled: !!slug,
+  });
+
+  if (isLoading) {
+    return (
+      <Layout>
+        <div className="flex min-h-[50vh] items-center justify-center">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        </div>
+      </Layout>
+    );
+  }
+
+  if (error || !post) {
     return <Navigate to="/blog" replace />;
   }
 
-  const relatedPosts = getRelatedPosts(post.slug, post.category, 3);
+  const relatedPosts = recommendations || [];
 
   // Convert markdown-like content to HTML paragraphs
   const renderContent = (content: string) => {
@@ -160,24 +183,26 @@ export default function BlogPost() {
               <ArrowLeft className="mr-2 h-4 w-4" />
               Back to Blog
             </Link>
-            <Badge variant="secondary" className="mb-4">
-              {post.category}
-            </Badge>
+            {post.tags[0] && (
+              <Badge variant="secondary" className="mb-4">
+                {post.tags[0]}
+              </Badge>
+            )}
             <h1 className="mb-6 text-3xl font-bold leading-tight text-primary-foreground md:text-4xl lg:text-5xl">
               {post.title}
             </h1>
             <div className="flex flex-wrap items-center gap-4 text-sm text-primary-foreground/70">
               <div className="flex items-center gap-2">
                 <User className="h-4 w-4" />
-                {post.author.name}
+                {post.author}
               </div>
               <div className="flex items-center gap-2">
                 <Calendar className="h-4 w-4" />
-                {post.date}
+                {new Date(post.created_date).toLocaleDateString()}
               </div>
               <div className="flex items-center gap-2">
                 <Clock className="h-4 w-4" />
-                {post.readTime}
+                {post.read_time}
               </div>
             </div>
           </div>
@@ -189,14 +214,16 @@ export default function BlogPost() {
         <div className="container">
           <div className="mx-auto max-w-3xl">
             {/* Lead paragraph */}
-            <p className="mb-8 text-xl leading-relaxed text-foreground">
-              {post.excerpt}
-            </p>
+            {post.subtitle && (
+              <p className="mb-8 text-xl leading-relaxed text-foreground">
+                {post.subtitle}
+              </p>
+            )}
 
             <Separator className="mb-8" />
 
             {/* Main content */}
-            <div className="prose-custom">{renderContent(post.content)}</div>
+            <div className="prose-custom">{renderContent(post.description)}</div>
 
             {/* Tags */}
             <div className="mt-12">
@@ -273,22 +300,17 @@ export default function BlogPost() {
               <CardHeader>
                 <div className="flex items-start gap-4">
                   <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary text-xl font-bold text-primary-foreground">
-                    {post.author.name
+                    {post.author
                       .split(" ")
                       .map((n) => n[0])
                       .join("")}
                   </div>
                   <div>
-                    <CardTitle>{post.author.name}</CardTitle>
-                    <p className="text-sm text-muted-foreground">
-                      {post.author.role}
-                    </p>
+                    <CardTitle>{post.author}</CardTitle>
+                    <p className="text-sm text-muted-foreground">Author</p>
                   </div>
                 </div>
               </CardHeader>
-              <CardContent>
-                <p className="text-muted-foreground">{post.author.bio}</p>
-              </CardContent>
             </Card>
           </div>
         </div>
@@ -301,28 +323,30 @@ export default function BlogPost() {
             <div className="mx-auto max-w-5xl">
               <h2 className="mb-8 text-2xl font-bold">Related Articles</h2>
               <div className="grid gap-6 md:grid-cols-3">
-                {relatedPosts.map((relatedPost) => (
+                {relatedPosts.map((relatedPost: ApiBlog) => (
                   <Card
-                    key={relatedPost.slug}
+                    key={relatedPost._id}
                     className="group transition-shadow hover:shadow-lg"
                   >
                     <CardHeader>
-                      <Badge variant="outline" className="mb-2 w-fit">
-                        {relatedPost.category}
-                      </Badge>
+                      {relatedPost.tags[0] && (
+                        <Badge variant="outline" className="mb-2 w-fit">
+                          {relatedPost.tags[0]}
+                        </Badge>
+                      )}
                       <CardTitle className="line-clamp-2 text-lg transition-colors group-hover:text-primary">
-                        <Link to={`/blog/${relatedPost.slug}`}>
+                        <Link to={`/blog/${relatedPost._id}`}>
                           {relatedPost.title}
                         </Link>
                       </CardTitle>
                     </CardHeader>
                     <CardContent>
                       <p className="mb-4 line-clamp-2 text-sm text-muted-foreground">
-                        {relatedPost.excerpt}
+                        {relatedPost.subtitle || relatedPost.description.slice(0, 100) + '...'}
                       </p>
                       <div className="flex items-center justify-between text-xs text-muted-foreground">
-                        <span>{relatedPost.author.name}</span>
-                        <span>{relatedPost.readTime}</span>
+                        <span>{relatedPost.author}</span>
+                        <span>{relatedPost.read_time}</span>
                       </div>
                     </CardContent>
                   </Card>

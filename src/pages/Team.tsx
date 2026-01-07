@@ -1,48 +1,16 @@
+import { useQuery } from "@tanstack/react-query";
 import { Layout } from "@/components/layout/Layout";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Linkedin, Mail } from "lucide-react";
-
-const teamMembers = [
-  {
-    name: "Nabaraj Khanal",
-    role: "Managing Director",
-    image: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&h=400&fit=crop&crop=face",
-    bio: "Leading Concern Nepal with strategic vision and extensive experience in political consulting and organizational management.",
-    expertise: ["Strategic Leadership", "Political Consulting", "Business Development"],
-    email: "nabaraj@concernnepal.org",
-    linkedin: "#"
-  },
-  {
-    name: "Narayan Panthi",
-    role: "Research and Data Strategist",
-    image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop&crop=face",
-    bio: "Expert in research methodologies and data-driven strategies, providing insights that power informed decision-making.",
-    expertise: ["Research Methodology", "Data Analysis", "Strategic Planning"],
-    email: "narayan@concernnepal.org",
-    linkedin: "#"
-  },
-  {
-    name: "Rajan Bhandari",
-    role: "Researcher",
-    image: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400&h=400&fit=crop&crop=face",
-    bio: "Dedicated researcher with expertise in political and social research, delivering comprehensive analysis and insights.",
-    expertise: ["Political Research", "Social Analysis", "Report Writing"],
-    email: "rajan@concernnepal.org",
-    linkedin: "#"
-  },
-  {
-    name: "Roshan Khanal",
-    role: "Technology and Digital Operations Manager",
-    image: "https://images.unsplash.com/photo-1519345182560-3f2917c472ef?w=400&h=400&fit=crop&crop=face",
-    bio: "Managing digital operations and technology infrastructure, ensuring seamless technical solutions for all projects.",
-    expertise: ["Digital Operations", "Technology Management", "Data Systems"],
-    email: "roshan@concernnepal.org",
-    linkedin: "#"
-  }
-];
+import { Linkedin, Mail, Loader2 } from "lucide-react";
+import { teamApi, ApiTeamMember } from "@/lib/api";
 
 const Team = () => {
+  const { data: teamMembers, isLoading, error } = useQuery({
+    queryKey: ['team'],
+    queryFn: teamApi.getAll,
+  });
+
   return (
     <Layout>
       {/* Hero Section */}
@@ -68,43 +36,64 @@ const Team = () => {
             </p>
           </div>
 
-          <div className="grid md:grid-cols-2 gap-8">
-            {teamMembers.map((member, index) => (
-              <Card key={index} className="overflow-hidden hover:shadow-lg transition-shadow">
-                <CardContent className="p-0">
-                  <div className="flex flex-col md:flex-row">
-                    <div className="md:w-1/3">
-                      <img
-                        src={member.image}
-                        alt={member.name}
-                        className="w-full h-64 md:h-full object-cover"
-                      />
-                    </div>
-                    <div className="md:w-2/3 p-6">
-                      <h3 className="text-xl font-bold text-foreground mb-1">{member.name}</h3>
-                      <p className="text-secondary font-medium mb-3">{member.role}</p>
-                      <p className="text-muted-foreground text-sm mb-4">{member.bio}</p>
-                      <div className="flex flex-wrap gap-2 mb-4">
-                        {member.expertise.map((skill, idx) => (
-                          <Badge key={idx} variant="secondary" className="text-xs">
-                            {skill}
-                          </Badge>
-                        ))}
+          {/* Loading State */}
+          {isLoading && (
+            <div className="flex justify-center py-12">
+              <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            </div>
+          )}
+
+          {/* Error State */}
+          {error && (
+            <div className="text-center py-12">
+              <p className="text-destructive">Failed to load team members. Please try again later.</p>
+            </div>
+          )}
+
+          {/* Team Grid */}
+          {!isLoading && teamMembers && (
+            <div className="grid md:grid-cols-2 gap-8">
+              {teamMembers.map((member: ApiTeamMember) => (
+                <Card key={member._id} className="overflow-hidden hover:shadow-lg transition-shadow">
+                  <CardContent className="p-0">
+                    <div className="flex flex-col md:flex-row">
+                      <div className="md:w-1/3 flex items-center justify-center bg-gradient-to-br from-primary/10 to-secondary/10 p-8">
+                        <div className="flex h-24 w-24 items-center justify-center rounded-full bg-primary text-3xl font-bold text-primary-foreground">
+                          {member.name
+                            .split(" ")
+                            .map((n) => n[0])
+                            .join("")}
+                        </div>
                       </div>
-                      <div className="flex gap-3">
-                        <a href={member.linkedin} className="text-muted-foreground hover:text-primary transition-colors">
-                          <Linkedin className="h-5 w-5" />
-                        </a>
-                        <a href={`mailto:${member.email}`} className="text-muted-foreground hover:text-primary transition-colors">
-                          <Mail className="h-5 w-5" />
-                        </a>
+                      <div className="md:w-2/3 p-6">
+                        <h3 className="text-xl font-bold text-foreground mb-1">{member.name}</h3>
+                        <p className="text-secondary font-medium mb-3">{member.position}</p>
+                        <div className="flex flex-wrap gap-2 mb-4">
+                          {member.skills.map((skill, idx) => (
+                            <Badge key={idx} variant="secondary" className="text-xs">
+                              {skill}
+                            </Badge>
+                          ))}
+                        </div>
+                        <div className="flex gap-3">
+                          {member.linkedin_link && (
+                            <a href={member.linkedin_link} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary transition-colors">
+                              <Linkedin className="h-5 w-5" />
+                            </a>
+                          )}
+                          {member.email && (
+                            <a href={`mailto:${member.email}`} className="text-muted-foreground hover:text-primary transition-colors">
+                              <Mail className="h-5 w-5" />
+                            </a>
+                          )}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
         </div>
       </section>
 
